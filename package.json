@@ -1,0 +1,25 @@
+{
+  "name": "staf",
+  "version": "1.0.0",
+  "description": "Simple Test Automation Framework",
+  "main": "index.js",
+  "scripts": {
+    "test": "node cli.js ./test/test-config.js",
+    "lint": "./node_modules/.bin/eslint ./"
+  },
+  "bin": {
+    "staf": "cli.js"
+  },
+  "keywords": [
+    "test",
+    "automation",
+    "framework",
+    "testrunner"
+  ],
+  "author": "Georgii Kurtanidze",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "eslint": "^6.5.1"
+  }
+}
