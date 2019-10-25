@@ -20,10 +20,3 @@ if (process.argv.length === 3 ) {
     console.log('Usage:')
     console.log('  simple <config-file.js>')
 }
-/* 
-const configFile = '../stest/test.config.js'
-const configPath = path.resolve(configFile)
-const testConfig = require(configPath)
-const config = Object.assign({}, defaultConfig, testConfig)
-
-run(config).then(status => process.exit(status)) */
