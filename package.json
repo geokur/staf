@@ -18,6 +18,10 @@
   ],
   "author": "Georgii Kurtanidze",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/geokur/staf.git"
+  },
   "dependencies": {},
   "devDependencies": {
     "eslint": "^6.5.1"
