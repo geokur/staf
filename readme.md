@@ -2,10 +2,11 @@
 ## Quick start
 [All code is stored in repo]: (https://github.com/geokur/staf-examples)
 ### Install Simple Test Automation Framework
-```
+```shell
 npm install -g staf
 ```
 ### Create first test
+Create test class
 ```javascript
 const assert = require('assert').strict
 
@@ -33,6 +34,6 @@ project
 +-- test-config.js
 ```
 Execute the test:
-```
+```shell
 staf test-config.js
 ```
