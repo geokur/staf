@@ -1,6 +1,6 @@
 {
   "name": "staf",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Simple Test Automation Framework",
   "main": "index.js",
   "scripts": {
