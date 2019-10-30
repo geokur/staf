@@ -6,6 +6,7 @@ The idea behind creation of another test runner is to enable:
 properties
 - Analyzing result of test and decide if it needs retry
 - Stopping test execution on fulfilling some condition
+- Providing test dependencies into test
 ## Quick start
 All quickstart code is stored in repo: https://github.com/geokur/staf-examples
 ### Install Simple Test Automation Framework
@@ -44,20 +45,22 @@ Execute the test:
 ```shell
 staf test-config.js
 ```
+### Test with pre and post conditions
+
 ### Test with properties
 Create test with properties
 ```javascript
 const assert = require('assert').strict
 
 class PropertyTest {
-    myPositiveTest(properties) {
-        properties.type = 'positive'
+    myPositiveTest(testProperties) {
+        testProperties.type = 'positive'
         return () => {
             assert.ok(true)
         }
     }
-    myNegativeTest(properties) {
-        properties.type = 'negative'
+    myNegativeTest(testProperties) {
+        testProperties.type = 'negative'
         return () => {
             assert.ok(false)
         }
@@ -79,4 +82,57 @@ module.exports = {
 Execute the test:
 ```shell
 staf positive-test-config.js
+```
+### Test with retry
+Create test with retry property
+```javascript
+const assert = require('assert').strict
+
+class RetryTest {
+    zeroRetryTest(testProperties) {
+        testProperties.retry = 0
+        return () => {
+            assert.ok(true)
+        }
+    }
+    oneRetryTest(testProperties) {
+        testProperties.retry = 1
+        return () => {
+            assert.ok(false)
+        }
+    }
+}
+
+module.exports = RetryTest
+```
+And configuration file for test runner in file 'retry-test-config.js'. Notice method 'analyze' which is called after execution of each test. It is called with 3 params:
+- test - test which has just been executed
+- result - result of this test
+- tests - array with all tests planned for execution
+
+For 'test' to be retried it should just be pushed back to 'tests' array.
+```javascript
+const retryCount = new Map()
+
+module.exports = {
+    testPath: 'test',
+    schedule(tests) {
+        const onlyRetryable = tests.filter(test => 'retry' in test.testProperties)
+        return onlyRetryable
+    },
+    analyze(test, result, tests) {
+        if (result.testResult instanceof Error) {
+            const { testProperties } = test
+            let retried = retryCount.has(testProperties) ? retryCount.get(testProperties) : 0
+            if (retried < testProperties.retry) {
+                retryCount.set(testProperties, ++retried)
+                tests.push(test)
+            }
+        }
+    }
+}
+```
+Execute the test:
+```shell
+staf retry-test-config.js
 ```
