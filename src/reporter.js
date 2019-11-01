@@ -1,4 +1,5 @@
 const { AssertionError } = require('assert')
+const { cutStack } = require('./util')
 
 const red = '\x1b[31m'
 const green = '\x1b[32m'
@@ -26,10 +27,10 @@ class Reporter {
         if (failedResult) {
             if (isFailedAssert(result)) {
                 status = `${red}failed`
-                error = `\n${result.testResult.stack}${esc}`
+                error = `\n${cutStack(result.testResult)}${esc}`
             } else {
                 status = `${yellow}broken`
-                error = `\n${failedResult.message}\n${failedResult.stack}${esc}`
+                error = `\n${cutStack(failedResult)}${esc}`
             }
         } else {
             status = `${green}passed${esc}`

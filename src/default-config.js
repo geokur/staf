@@ -16,7 +16,7 @@ function resultStat(results) {
     return outcome
 }
 
-function printSummary(stat, summary, status) {
+function printSummary(stat, summary) {
     const red = '\x1b[31m'
     const green = '\x1b[32m'
     const yellow = '\x1b[33m'
@@ -30,9 +30,6 @@ function printSummary(stat, summary, status) {
     console.log(`${green}Passed:    ${passed} tests${esc}`)
     console.log(`${yellow}Broken:    ${broken} tests${esc}`)
     console.log(`${red}Failed:    ${failed} tests${esc}`)
-    console.log('------------------------------------------')
-    console.log('Exit code: %s', status)
-    console.log('------------------------------------------')
 }
 
 /**
@@ -99,7 +96,7 @@ module.exports = {
         const summary = resultStat(results)
         const { broken, failed } = summary
         const status = (failed > 0 || broken > 0) ? 1 : 0
-        printSummary(stat, summary, status)
+        printSummary(stat, summary)
         return status
     },
     /**

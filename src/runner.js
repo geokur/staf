@@ -20,6 +20,9 @@ function load(dirPath) {
             }
         })
     }
+    if (!fs.existsSync(dirPath)) {
+        throw new Error(`Test path [${dirPath}] does not exist`)
+    }
     loadDir(dirPath)
     return classes
 }
@@ -42,40 +45,24 @@ async function safe(fn) {
     return result
 }
 
-function getTestFunc(testInstance, testProperties) {
-    const { testName, testClassName } = testProperties
-    const red = '\x1b[31m'
-    const esc = '\x1b[0m'
-    try {
-        const testBody = testInstance[testName](testProperties)
-        if (typeof testBody === 'function') {
-            return testBody
-        }
-        console.log(`${red}Test method [${testClassName}.${testName}] did not return body of test${esc}`)
-    } catch(e) {
-        console.log(`${red}Error executing method [${testClassName}.${testName}]`)
-        console.log(e.message, esc)
-    }
-    return undefined
-}
-
 function createTest(testInstance, testProperties, beforeEach, afterEach) {
-    let testFunc = getTestFunc(testInstance, testProperties)
-    if (testFunc === undefined) {
-        return undefined
+    const { testName, testClassName } = testProperties
+    const testFunc = testInstance[testName](testProperties)
+    if (typeof testFunc !== 'function') {
+        throw new TypeError(`Test method [${testClassName}.${testName}] did not return function`)
     }
-    const testBody = async (provider) => {
+    const testBody = async (provided) => {
         let beforeEachResult, testResult, afterEachResult
         if (beforeEach) {
-            beforeEachResult = await safe(() => testInstance.beforeEach(provider))
+            beforeEachResult = await safe(() => testInstance.beforeEach({ testProperties, provided }))
         }
         if (!(beforeEachResult instanceof Error)) {
-            testResult = await safe(() => testFunc(provider))
+            testResult = await safe(() => testFunc(provided))
         }
         if (afterEach) {
-            afterEachResult = await safe(() => testInstance.afterEach({ beforeEachResult, testResult }, provider))
+            afterEachResult = await safe(() => testInstance.afterEach({ testProperties, beforeEachResult, testResult, provided }))
         }
-        return { testProperties,  beforeEachResult, testResult, afterEachResult }
+        return { testProperties, beforeEachResult, testResult, afterEachResult }
     }
     return { testProperties, testBody }
 }
@@ -88,7 +75,7 @@ function wrap(parsedTestClass) {
         const testInstance = new TestClass(testInstanceProperties)
         const testProperties = Object.assign({}, { testName }, testInstanceProperties)
         return createTest(testInstance, testProperties, beforeEach, afterEach)
-    }).filter(Boolean)
+    })
 }
 
 function prepare(testClasses) {
@@ -96,7 +83,11 @@ function prepare(testClasses) {
 }
 
 function plan(schedule, preparedTests) {
-    return schedule(preparedTests)
+    const planned = schedule(preparedTests)
+    if (!(planned instanceof Array)) {
+        throw new TypeError(`InvalidConfig: [schedule] method returned [${typeof planned}] but [Array] is expected`)
+    }
+    return planned
 }
 
 async function execute(tests, config) {
@@ -128,19 +119,36 @@ async function execute(tests, config) {
     return results
 }
 
+function validateConfig(config) {
+    if (typeof config.testPath !== 'string') {
+        throw new TypeError(`InvalidConfig: [testPath] is not a string`)
+    }
+    if (!Number.isInteger(config.threadCount)) {
+        throw new TypeError(`InvalidConfig: [threadCount] is not an integer`)
+    }
+    ['schedule', 'analyze', 'stop', 'provide', 'report', 'exit'].forEach(method => {
+        if (typeof config[method] !== 'function') {
+            throw new TypeError(`InvalidConfig: [${method}] is not a function`)
+        }
+    })
+    return true
+}
+
 async function run(config) {
-    let stat = {}
-    const { testPath, schedule, exit } = config
-    const resolvedPath = path.resolve(testPath)
-    const classes = load(resolvedPath)
-    stat.loaded = classes.length
-    const prepared = prepare(classes)
-    stat.prepared = prepared.length
-    const planned = plan(schedule, prepared)
-    stat.planned = planned.length
-    const results = await execute(planned, config)
-    stat.executed = results.size
-    return exit(results, stat)
+    if (validateConfig(config)) {
+        let stat = {}
+        const { testPath, schedule, exit } = config
+        const resolvedPath = path.resolve(testPath)
+        const classes = load(resolvedPath)
+        stat.loaded = classes.length
+        const prepared = prepare(classes)
+        stat.prepared = prepared.length
+        const planned = plan(schedule, prepared)
+        stat.planned = planned.length
+        const results = await execute(planned, config)
+        stat.executed = results.size
+        return exit(results, stat)
+    }
 }
 
 const runner = {
