@@ -1,6 +1,6 @@
 const { AssertionError } = require('assert')
-const Reporter = require('./reporter')
 
+const Reporter = require('./reporter')
 const defaultReporter = new Reporter()
 
 function resultStat(results) {
@@ -14,22 +14,6 @@ function resultStat(results) {
     const isFailedAssert = ({ testResult }) => testResult instanceof AssertionError
     results.forEach(result => isFailed(result) ? (isFailedAssert(result) ? outcome.failed++ : outcome.broken++) : outcome.passed++)
     return outcome
-}
-
-function printSummary(stat, summary) {
-    const red = '\x1b[31m'
-    const green = '\x1b[32m'
-    const yellow = '\x1b[33m'
-    const esc = '\x1b[0m'
-    const { passed, broken, failed } = summary
-    console.log('------------------------------------------')
-    console.log(`Loaded:    ${stat.loaded} classes`)
-    console.log(`Prepared:  ${stat.prepared} tests`)
-    console.log(`Planned:   ${stat.planned} tests`)
-    console.log(`Executed:  ${stat.executed} tests`)
-    console.log(`${green}Passed:    ${passed} tests${esc}`)
-    console.log(`${yellow}Broken:    ${broken} tests${esc}`)
-    console.log(`${red}Failed:    ${failed} tests${esc}`)
 }
 
 /**
@@ -50,6 +34,19 @@ function printSummary(stat, summary) {
  * @typedef {Object} Test
  * @property {TestProperties} testProperties
  * @property {Function} testBody
+ */
+
+/**
+ * @typedef {Object} Summary
+ * @property {number} passed
+ * @property {number} broken
+ * @property {number} failed
+ */
+
+/**
+ * @typedef {Object} Outcome
+ * @property {Summary} stat
+ * @property {number} status
  */
 
 module.exports = {
@@ -90,14 +87,13 @@ module.exports = {
      * This function executed after all tests finished.
      * @param {Array} results - array of test results
      * @param {Object} stat - Statistics
-     * @returns {number} Status code for process.exit()
+     * @returns {Outcome} Outcomet of tests execution
      */
-    exit(results, stat) {
+    exit(results) {
         const summary = resultStat(results)
         const { broken, failed } = summary
         const status = (failed > 0 || broken > 0) ? 1 : 0
-        printSummary(stat, summary)
-        return status
+        return { status, summary }
     },
     /**
      * This function executed before each test.

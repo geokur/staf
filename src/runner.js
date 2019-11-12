@@ -147,7 +147,8 @@ async function run(config) {
         stat.planned = planned.length
         const results = await execute(planned, config)
         stat.executed = results.size
-        return exit(results, stat)
+        stat.outcome = exit(results)
+        return stat
     }
 }
 

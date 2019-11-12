@@ -15,9 +15,9 @@ if (process.argv.length === 3 ) {
     console.log('Running config:', configPath)
     printLine('-')
     run(config).then(
-        status => {
-            printFooter(status)
-            process.exit(status)
+        stat => {
+            printFooter(stat)
+            process.exit(stat.outcome.status)
         }, 
         error => {
             console.log(`\x1b[31m${cutStack(error)}\x1b[0m`)
