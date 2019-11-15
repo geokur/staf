@@ -1,5 +1,5 @@
 # Simple Test Automation Framework
-![npm downloads](https://img.shields.io/npm/dm/sdif.svg?style=flat-square)
+![npm downloads](https://img.shields.io/npm/dm/staf.svg?style=flat-square)
 
 ## Background
 The idea behind creation of another test runner is to enable:
