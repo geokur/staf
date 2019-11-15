@@ -1,8 +1,10 @@
 # Simple Test Automation Framework
+![npm downloads](https://img.shields.io/npm/dm/sdif.svg?style=flat-square)
+
 ## Background
 The idea behind creation of another test runner is to enable:
 - Assigning any properties to test
-- Controling of which tests to execute and in which order based on their 
+- Controling of which tests to execute and in which order based on their
 properties
 - Analyzing result of test and decide if it needs retry
 - Stopping test execution on fulfilling some condition
